@@ -7,264 +7,264 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/chrisleekr/binance-trading-bot)](https://github.com/chrisleekr/binance-trading-bot/graphs/contributors)
 [![MIT License](https://img.shields.io/github/license/chrisleekr/binance-trading-bot)](https://github.com/chrisleekr/binance-trading-bot/blob/master/LICENSE)
 
-> Automated Binance trading bot with trailing buy/sell strategy
+> Автоматизированный торговый бот Binance со скользящей стратегией покупки/продажи
 
 ---
 
 [![ko](https://img.shields.io/badge/lang-한국어-brightgreen.svg)](https://github.com/chrisleekr/binance-trading-bot/blob/master/README.ko.md)
 [![中文](https://img.shields.io/badge/lang-中文-blue.svg)](https://github.com/chrisleekr/binance-trading-bot/blob/master/README.zh-cn.md)
 
-This is a test project. I am just testing my code.
+Это тестовый проект. Я просто тестирую свой код.
 
-## Warnings
+## Предупреждения
 
-**I cannot guarantee whether you can make money or not.**
+** Я не могу гарантировать, сможете ли вы зарабатывать деньги или нет.**
 
-**So use it at your own risk! I have no responsibility for any loss or hardship
-incurred directly or indirectly by using this code. Read
-[disclaimer](#disclaimer) before using this code.**
+** Так что используйте его на свой страх и риск! Я не несу ответственности за любые потери или трудности
+понесенные прямо или косвенно при использовании этого кода. Читать
+[отказ от ответственности](#disclaimer) перед использованием этого кода.**
 
-**Before updating the bot, make sure to record the last buy price in the note. It may lose the configuration or last buy price records.**
+** Перед обновлением бота обязательно запишите в заметку последнюю цену покупки. Он может потерять конфигурацию или записи последней цены покупки.**
 
-## How it works
+## Как это работает
 
 ### Trailing Grid Trade Buy/Sell Bot
 
-This bot is using the concept of trailing buy/sell order which allows following the price fall/rise.
+Этот бот использует концепцию скользящего ордера на покупку/продажу, который позволяет следить за падением/ростом цены.
 
-> Trailing Stop Orders
-> About Trailing Stop Orders Concept you can find at [Binance Official document](https://www.binance.com/en/support/faq/360042299292)
+> Скользящие стоп-приказы
+> С концепцией скользящих стоп-ордеров вы можете ознакомиться в [Официальном документе Binance] (https://www.binance.com/en/support/faq/360042299292)
 >
 > TL;DR
-> Place orders at a fixed value or percentage when the price changes. Using this feature you can buy at the lowest possible price when buying down and sell at the highest possible price when selling up.
+> Размещайте ордера на фиксированную стоимость или процент при изменении цены. Используя эту функцию, вы можете покупать по минимально возможной цене при покупке вниз и продавать по максимально возможной цене при продаже вверх.
 
-- The bot supports multiple buy/sell orders based on the configuration.
-- The bot can monitor multiple symbols. All symbols will be monitored per second.
-- The bot is using MongoDB to provide a persistence database. However, it does not use the latest MongoDB to support Raspberry Pi 32bit. Used MongoDB version
-  is 3.2.20, which is provided by [apcheamitru](https://hub.docker.com/r/apcheamitru/arm32v7-mongo).
-- The bot is tested/working with Linux and Raspberry Pi 4 32bit. Other platforms are not tested.
+- Бот поддерживает несколько ордеров на покупку/продажу в зависимости от конфигурации.
+- Бот может отслеживать несколько символов. Все символы будут контролироваться в секунду.
+- Бот использует MongoDB для предоставления постоянной базы данных. Однако он не использует последнюю версию MongoDB для поддержки 32-битной версии Raspberry Pi. Используемая версия MongoDB
+   3.2.20, предоставленный [apcheamitru](https://hub.docker.com/r/apcheamitru/arm32v7-mongo).
+- Бот протестирован/работает с Linux и Raspberry Pi 4 32bit. Другие платформы не тестировались.
 
-#### Buy Signal
+#### Купить Сигнал
 
-The bot will continuously monitor the coin based on the grid trade configuration.
+Бот будет постоянно отслеживать монету на основе конфигурации торговли сетки.
 
-For grid trade #1, the bot will place a STOP-LOSS-LIMIT order to buy when the current price reaches the lowest price. If the current price continuously falls, then the bot will cancel the previous order and re-place the new STOP-LOSS-LIMIT order with the new price.
+Для сделки по сетке № 1 бот размещает ордер STOP-LOSS-LIMIT на покупку, когда текущая цена достигает минимальной цены. Если текущая цена постоянно падает, то бот отменит предыдущий ордер и заменит новый ордер STOP-LOSS-LIMIT с новой ценой.
 
-After grid trade #1, the bot will monitor the COIN based on the last buy price.
+После сделки по сетке № 1 бот будет отслеживать МОНЕТУ на основе последней цены покупки.
 
-- The bot will not place a buy order of the grid trade #1 if has enough coin (typically over $10 worth) to sell when reaches the trigger price for selling.
-- The bot will remove the last buy price if the estimated value is less than the last buy price removal threshold.
+- Бот не будет размещать ордер на покупку сетки #1, если у него достаточно монет (обычно более 10 долларов США) для продажи, когда будет достигнута триггерная цена для продажи.
+- Бот удалит последнюю цену покупки, если оценочное значение меньше порога удаления последней цены покупки.
 
-##### Buy Scenario
+##### Купить Сценарий
 
-Let say, if the buy grid trade configurations are set as below:
+Скажем, если конфигурации торговли сетки покупки установлены, как показано ниже:
 
-- Number of grids: 2
-- Grids
-  | No# | Trigger Percentage  | Stop Price Percentage | Limit price percentage | USDT |
-  | --- | ------------------- | --------------------- | ---------------------- | ---- |
-  | 1   | 1                   | 1.05                  | 1.051                  | 50   |
-  | 2   | 0.8                 | 1.03                  | 1.031                  | 100  |
+- Количество сеток: 2
+- Сетки
+  | No# | Процент срабатывания | Процент стоп-цены     | Процент предельной цены | USDT |
+  | --- | -------------------  | --------------------- | ----------------------  | ---- |
+  | 1   | 1                    | 1.05                  | 1.051                   | 50   |
+  | 2   | 0.8                  | 1.03                  | 1.031                   | 100  |
 
-To make it easier to understand, I will use `$` as a USDT symbol. For the simple calculation, I do not take an account for the commission. In real trading, the quantity may be different.
+Чтобы упростить понимание, я буду использовать «$» в качестве символа USDT. Для простого расчета я не беру в расчет комиссию. В реальной торговле количество может быть другим.
 
-Your 1st grid trading for buying is configured as below:
+Ваша первая торговля по сетке на покупку настроена следующим образом:
 
-- Grid No#: 1
-- Trigger percentage: 1
-- Stop percentage: 1.05 (5.00%)
-- Limit percentage: 1.051 (5.10%)
-- Max purchase amount: $50
+- Сетка №#: 1
+- Процент срабатывания: 1
+- Процент остановки: 1,05 (5,00%)
+- Предельный процент: 1,051 (5,10%)
+- Максимальная сумма покупки: $50
 
-And the market is as below:
+И рынок, как показано ниже:
 
-- Current price: $105
-- Lowest price: $100
-- Trigger price: $100
+- Текущая цена: $105
+- Самая низкая цена: $100
+- Начальная цена: $100
 
-When the current price is falling to the lowest price ($100) and lower than ATH(All-Time High) restricted price if enabled, the bot will place new STOP-LOSS-LIMIT order for buying.
+Когда текущая цена падает до самой низкой цены (100 долларов США) и ниже, чем ограниченная цена ATH (All-Time High), если она включена, бот размещает новый ордер STOP-LOSS-LIMIT на покупку.
 
-- Stop price: $100 * 1.05 = $105
-- Limit price: $100 * 1.051 = $105.1
-- Quantity: 0.47573
+- Стоп-цена: 100 долларов * 1,05 = 105 долларов.
+- Лимитная цена: 100$ * 1,051 = 105,1$
+- Количество: 0,47573
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $95
+- Текущая цена: $95
 
-Then the bot will follow the price fall and place new STOP-LOSS-LIMIT order as below:
+Затем бот будет следить за падением цены и размещать новый ордер STOP-LOSS-LIMIT, как показано ниже:
 
-- Stop price: $95 * 1.05 = $99.75
-- Limit price: $95 * 1.051 = $99.845
-- Quantity: 0.5
+- Стоп-цена: 95$ * 1,05 = 99,75$
+- Лимитная цена: $95 * 1,051 = $99,845
+- Количество: 0,5
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $100
+- Текущая цена: $100
 
-Then the bot will execute 1st purchase for the coin. The last buy price will be recorded as `$99.845`. The purchased quantity will be `0.5`.
+Затем бот выполнит 1-ю покупку за монету. Последняя цена покупки будет записана как «$99,845». Приобретенное количество будет «0,5».
 
-Once the coin is purchased, the bot will start monitoring the sell signal and at the same time, monitor the next grid trading for buying.
+Как только монета будет куплена, бот начнет отслеживать сигнал на продажу и в то же время следить за следующей сеткой, торгующей на покупку.
 
-Your 2nd grid trading for buying is configured as below:
+Ваша 2-я сетка, торгующая на покупку, настроена следующим образом:
 
-- Grid#: 2
-- Current last buy price: $99.845
-- Trigger percentage: 0.8 (20%)
-- Stop percentage: 1.03 (3.00%)
-- Limit percentage: 1.031 (3.10%)
-- Max purchase amount: $100
+- Сетка №: 2
+- Текущая цена последней покупки: $99,845
+- Процент срабатывания: 0,8 (20%)
+- Процент остановки: 1,03 (3,00%)
+- Предельный процент: 1,031 (3,10%)
+- Максимальная сумма покупки: $100
 
-And if the current price is continuously falling to `$79.876` (20% lower), then the bot will place new STOP-LOSS-LIMIT order for the 2nd grid trading for the coin.
+И если текущая цена постоянно падает до $79.876 (на 20% ниже), то бот выставит новый ордер STOP-LOSS-LIMIT для торговли монетой во 2-й сетке.
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $75
+- Текущая цена: $75
 
-Then the bot will follow the price fall and place new STOP-LOSS-LIMT order as below:
+Затем бот будет следить за падением цены и размещать новый ордер STOP-LOSS-LIMT, как показано ниже:
 
-- Stop price: $75 * 1.03 = $77.25
-- Limit price: $75 * 1.031 = $77.325
-- Quantity: 1.29
+- Стоп-цена: 75$ * 1,03 = 77,25$
+- Лимитная цена: 75$ * 1,031 = 77,325$
+- Количество: 1,29
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $78
+- Текущая цена: $78
 
-Then the bot will execute 2nd purchase for the coin. The last buy price will be automatically re-calculated as below:
+Затем бот выполнит вторую покупку за монету. Последняя цена покупки будет автоматически пересчитана, как показано ниже:
 
-- Final last buy price: ($50 + $100)/(0.5 COIN + 1.29 COIN) = $83.80
+- Окончательная цена последней покупки: (50 $ + 100 $)/(0,5 МОНЕТЫ + 1,29 МОНЕТЫ) = 83,80 $
 
-##### In-depth Buy Configuration in-depth
+##### Подробная информация о настройке покупки
 
-The detailed document for buy configuration available here.
+Подробный документ по конфигурации покупки доступен здесь.
 
 [https://github.com/chrisleekr/binance-trading-bot/wiki/Buy-Scenario](https://github.com/chrisleekr/binance-trading-bot/wiki/Buy-Scenario)
 
-### Sell Signal
+### Сигнал на продажу
 
-If there is enough balance for selling and the last buy price is recorded in the bot, then the bot will start monitoring the sell signal of the grid trade #1. Once the current price reaches the trigger price of the grid trade #1, then the bot will place a STOP-LOSS-LIMIT order to sell. If the current price continuously rises, then the bot will cancel the previous order and re-place the new STOP-LOSS-LIMIT order with the new price.
+Если баланса достаточно для продажи и в боте зафиксирована последняя цена покупки, то бот начнет отслеживать сигнал продажи сетки №1. Как только текущая цена достигнет цены срабатывания сетки № 1, бот разместит ордер STOP-LOSS-LIMIT на продажу. Если текущая цена постоянно растет, то бот отменит предыдущий ордер и заменит новый ордер STOP-LOSS-LIMIT с новой ценой.
 
-- If the bot does not have a record for the last buy price, the bot will not sell the coin.
-- If the coin is worth less than the last buy price removal threshold, then the bot will remove the last buy price.
-- If the coin is not worth than the minimum notional value, then the bot will not place an order.
+- Если у бота нет записи о последней цене покупки, бот не продаст монету.
+- Если монета стоит меньше порога удаления последней цены покупки, то бот удалит последнюю цену покупки.
+- Если монета не стоит минимальной номинальной стоимости, то бот не выставит ордер.
 
-#### Sell Scenario
+#### Сценарий продажи
 
-Let say, if the sell grid trade configurations are set as below:
+Скажем, если конфигурации торговли сетки продажи установлены, как показано ниже:
 
-- Number of grids: 2
-- Grids
-  | No# | Trigger Percentage  | Stop Price Percentage | Limit price percentage | Sell Quantity Percentage |
-  | --- | ------------------- | --------------------- | ---------------------- |------------------------- |
-  | 1st | 1.05                | 0.97                  | 0.969                  | 0.5                      |
-  | 2nd | 1.08                | 0.95                  | 0.949                  | 1                        |
+- Количество сеток: 2
+- Сетки
+  | No# | Процент срабатывания | Процент стоп-цены     | Процент предельной цены | USDT |
+  | --- | -------------------  | --------------------- | ----------------------  |------------------------- |
+  | 1st | 1.05                 | 0.97                  | 0.969                   | 0.5                      |
+  | 2nd | 1.08                 | 0.95                  | 0.949                   | 1                        |
 
-Unlike buy, the sell configuration will use the percentage of a quantity. If you want to sell all of your coin quantity, then simply configure it as `1` (100%).
+В отличие от покупки, конфигурация продажи будет использовать процент от количества. Если вы хотите продать все свое количество монет, просто настройте его как «1» (100%).
 
-From the last buy actions, you now have the following balances:
+Из последних действий по покупке у вас теперь есть следующие балансы:
 
-- Current quantity: 1.79
-- Current last buy price: $83.80
+- Текущее количество: 1,79
+- Текущая цена последней покупки: $83,80.
 
-Your 1st grid trading for selling is configured as below:
+Ваша первая торговля по сетке для продажи настроена следующим образом:
 
-- Grid No# 1
-- Trigger percentage: 1.05
-- Stop price percentage: 0.97
-- Limit price percentage: 0.969
-- Sell amount percentage: 0.5
+- Сетка №1
+- Процент срабатывания: 1,05
+- Процент стоп-цены: 0,97
+- Процент предельной цены: 0,969
+- Процент суммы продажи: 0,5
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $88
+- Текущая цена: $88
 
-As the current price is higher than the sell trigger price($87.99), then the bot will place new STOP-LOSS-LIMIT order for selling.
+Поскольку текущая цена выше цены срабатывания продажи (87,99 долл. США), бот разместит новый ордер STOP-LOSS-LIMIT на продажу.
 
-- Stop price: $88 * 0.97 = $85.36
-- Limit price: $88 * 0.969 = $85.272
-- Quantity: 0.895
+- Стоп-цена: $88 * 0,97 = $85,36.
+- Лимитная цена: $88 * 0,969 = $85,272
+- Количество: 0,895
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $90
+- Текущая цена: $90
 
-Then the bot will follow the price rise and place new STOP-LOSS-LIMIT order as below:
+Затем бот будет следить за ростом цены и размещать новый ордер STOP-LOSS-LIMIT, как показано ниже:
 
-- Stop price: $90 * 0.97 = $87.30
-- Limit price: $90 * 0.969 = $87.21
-- Quantity: 0.895
+- Цена стопа: 90$ * 0,97 = 87,30$
+- Лимитная цена: 90$ * 0,969 = 87,21$
+- Количество: 0,895
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $87
+- Текущая цена: $87
 
-Then the bot will execute 1st sell for the coin. Then the bot will now wait for 2nd selling trigger price ($83.80 * 1.08 = $90.504).
+Затем бот выполнит первую продажу монеты. Затем бот теперь будет ждать 2-й триггерной цены продажи (83,80 долл. США * 1,08 = 90,504 долл. США).
 
-- Current quantity: 0.895
-- Current last buy price: $83.80
+- Текущее количество: 0,895
+- Текущая цена последней покупки: $83,80.
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $91
+- Текущая цена: $91
 
-Then the current price($91) is higher than 2nd selling trigger price ($90.504), the bot will place new STOP-LOSS-LIMIT order as below:
+Тогда текущая цена (91 доллар США) выше, чем 2-я триггерная цена продажи (90,504 доллара США), бот разместит новый ордер STOP-LOSS-LIMIT, как показано ниже:
 
-- Stop price: $91 * 0.95 = $86.45
-- Limit price: $91 * 0.949 = $86.359
-- Quantity: 0.895
+- Стоп-цена: $91 * 0,95 = $86,45.
+- Лимитная цена: 91$ * 0,949 = 86,359$
+- Количество: 0,895
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $100
+- Текущая цена: $100
 
-Then the bot will follow the price rise and place new STOP-LOSS-LIMT order as below:
+Затем бот будет следить за ростом цены и размещать новый ордер STOP-LOSS-LIMT, как показано ниже:
 
-- Stop price: $100 * 0.95 = $95
-- Limit price: $100 * 0.949 = $94.9
-- Quantity: 0.895
+- Стоп-цена: 100 долларов * 0,95 = 95 долларов.
+- Лимитная цена: 100 $ * 0,949 = 94,9 $.
+- Количество: 0,895
 
-Let's assume the market changes as below:
+Предположим, что рынок меняется следующим образом:
 
-- Current price: $94
+- Текущая цена: $94
 
-Then the bot will execute 2nd sell for the coin.
+Затем бот выполнит вторую продажу монеты.
 
-The final profit would be
+Конечная прибыль будет
 
-- 1st sell: $94.9 * 0.895 = $84.9355
-- 2nd sell: $87.21 * 0.895 = $78.05295
-- Final profit: $162 (8% profit)
+- 1-я продажа: $94,9 * 0,895 = $84,9355
+- 2-я продажа: 87,21 доллара * 0,895 = 78,05295 доллара.
+- Итоговая прибыль: $162 (прибыль 8%).
 
-##### In-depth Sell Configuration
+##### Углубленная настройка продажи
 
-The detailed document for buy configuration available here.
+Подробный документ по конфигурации покупки доступен здесь.
 
 [https://github.com/chrisleekr/binance-trading-bot/wiki/Sell-Scenario](https://github.com/chrisleekr/binance-trading-bot/wiki/Sell-Scenario)
 
 ### [Features](https://github.com/chrisleekr/binance-trading-bot/wiki/Features)
 
-- Manual trade
-- Convert small balances to BNB
-- Trade all symbols
-- Monitoring multiple coins simultaneously
-- Stop-Loss
-- Restrict buying with ATH price
-- Grid Trade for buy/sell
-- Integrated with TradingView Technical Analysis
+- Ручная торговля
+- Конвертировать небольшие остатки в BNB
+- Торговать всеми символами
+- Мониторинг нескольких монет одновременно
+- Остановить потери
+- Ограничить покупку по цене ATH
+- Сеточная торговля на покупку/продажу
+- Интегрирован с техническим анализом TradingView
 
 ### Frontend + WebSocket
 
-React.js based frontend communicating via Web Socket:
+Интерфейс на основе React.js, взаимодействующий через веб-сокет:
 
-- List monitoring coins with buy/sell signals/open orders
-- View account balances
-- View open/closed trades
-- Manage global/symbol settings
-- Delete caches that are not monitored
-- Link to public URL
-- Support Add to Home Screen
-- Secure frontend
+- Мониторинг списка монет с сигналами покупки/продажи/открытыми ордерами
+- Просмотр остатков на счетах
+- Просмотр открытых/закрытых сделок
+- Управление глобальными / символьными настройками
+- Удалить кеши, которые не отслеживаются
+- Ссылка на общедоступный URL
+- Поддержка добавления на главный экран
+- Безопасный интерфейс
 
 ## Environment Parameters
 
